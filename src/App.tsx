@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Heart, Pause, Play, Radio, Volume2, VolumeX,
 import { memories, type Memory } from '@/data/memories';
 import { useMemoryEngine } from '@/hooks/useMemoryEngine';
 import EnvironmentLayer from '@/components/EnvironmentLayer';
+import AmbientAudioController from '@/components/AmbientAudioController';
 
 type Parallax = { x: number; y: number };
 
@@ -46,6 +47,7 @@ function App() {
         <img className="scene-image" src={memory.image} alt={memory.imageAlt} />
         {/* EnvironmentLayer is mounted above the image and below tint/vignette */}
         <EnvironmentLayer memoryId={memory.id} />
+        <AmbientAudioController />
         <div className="scene-tint" />
         <div className="scene-vignette" />
         <div className="scene-dust" aria-hidden="true" />
