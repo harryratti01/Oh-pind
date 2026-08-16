@@ -15,6 +15,122 @@ button:focus-visible { outline: 1px solid #f0c878; outline-offset: 4px; }
 .scene-tint { background: linear-gradient(100deg, rgba(27,19,14,.78) 0%, rgba(33,23,16,.35) 42%, rgba(20,23,25,.1) 100%), linear-gradient(0deg, rgba(41,25,12,.35), transparent 50%); mix-blend-mode: multiply; }
 .scene-vignette { background: radial-gradient(ellipse at center, transparent 34%, rgba(13,12,10,.62) 100%), linear-gradient(90deg, rgba(13,10,8,.22), transparent 18%, transparent 80%, rgba(13,10,8,.3)); }
 .scene-dust { opacity: .22; background-image: radial-gradient(circle at 23% 37%, rgba(255,228,177,.8) 0 1px, transparent 1.5px), radial-gradient(circle at 76% 22%, rgba(255,228,177,.65) 0 1px, transparent 1.5px), radial-gradient(circle at 58% 68%, rgba(255,228,177,.55) 0 1px, transparent 1.5px); background-size: 190px 150px, 260px 240px, 340px 290px; animation: dust 18s linear infinite; mix-blend-mode: screen; }
+.scene[data-env="pind-di-shaam"] .scene-dust,
+.scene[data-env="saddi-gali"] .scene-dust {
+	opacity: 0; /* replaced by EnvironmentLayer for these two scenes */
+}
+
+/* EnvironmentLayer base */
+.environment-layer { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+
+/* Haze and dust implemented with pseudo-elements on the environment layer */
+.environment-layer::before { content: ""; position: absolute; inset: 0; pointer-events: none; mix-blend-mode: overlay; opacity: var(--env-haze-opacity, 0.28); background: radial-gradient(60% 40% at 20% 30%, rgba(var(--env-haze-color, 255,216,155), 0.36) 0%, transparent 40%), linear-gradient(180deg, rgba(0,0,0,0.0), rgba(0,0,0,0.0)); transition: opacity 1s ease; }
+.environment-layer::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(circle at 10% 20%, rgba(255,238,200,0.95) 0 1px, transparent 1.5px), radial-gradient(circle at 70% 30%, rgba(255,235,185,0.85) 0 1px, transparent 1.5px); background-size: 220px 170px, 320px 260px; opacity: calc(var(--env-intensity, 0.6) * 0.9); mix-blend-mode: screen; transform: translate3d(0,0,0); transition: opacity 1s ease, transform 1s linear; }
+
+/* Per-memory variants - PIND DI SHAAM */
+.scene[data-env="pind-di-shaam"] .environment-layer::before { --env-haze-opacity: 0.26; --env-haze-color: 255,216,155; }
+.scene[data-env="pind-di-shaam"] .environment-layer::after { --env-intensity: 0.6; animation: env-dust-slow 28s linear infinite; }
+
+/* SADDI GALI variant */
+.scene[data-env="saddi-gali"] .environment-layer::before { --env-haze-opacity: 0.30; --env-haze-color: 244,200,140; }
+.scene[data-env="saddi-gali"] .environment-layer::after { --env-intensity: 0.8; animation: env-dust-slow 20s linear infinite; }
+
+@keyframes env-dust-slow { from { transform: translate3d(0,0,0); } to { transform: translate3d(12px,-8px,0); } }
+
+/* Reduce intensity on small screens */
+@media (max-width: 700px) {
+	.environment-layer::before { opacity: calc(var(--env-haze-opacity,0.28) * 0.7); }
+	.environment-layer::after { opacity: calc(var(--env-intensity,0.6) * 0.6); animation-duration: 40s; }
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+	.environment-layer::after { animation-duration: .01ms !important; }
+	.environment-layer::before { transition: none !important; }
+}
+
+/* --- Night (RAAT DA PIND) --- */
+.scene[data-env="raat-da-pind"] .environment-layer::before {
+	background: radial-gradient(60% 40% at 50% 30%, rgba(18,28,48,0.28) 0%, transparent 35%);
+	opacity: 0.16;
+}
+.scene[data-env="raat-da-pind"] .environment-layer::after {
+	/* very sparse tiny ambient particles */
+	background-image: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.06) 0 1px, transparent 1.5px), radial-gradient(circle at 65% 40%, rgba(255,255,255,0.05) 0 1px, transparent 1.5px);
+	background-size: 180px 140px, 260px 200px;
+	opacity: 0.08;
+	animation: env-night-drift 36s linear infinite;
+	mix-blend-mode: screen;
+}
+@keyframes env-night-drift { from { transform: translate3d(0,0,0); } to { transform: translate3d(-8px,-6px,0); } }
+
+/* --- Heat (GARMIYAN) --- */
+/* lightweight SVG filter included inline via data-uri not necessary; use subtle pseudo-element with low-opacity displaced background */
+.scene[data-env="garmiyan"] .environment-layer::before {
+	background: radial-gradient(60% 30% at 50% 45%, rgba(255,240,208,0.12) 0%, transparent 40%);
+	opacity: 0.12;
+}
+.scene[data-env="garmiyan"] .environment-layer::after {
+	background-image: radial-gradient(circle at 15% 25%, rgba(255,245,210,0.9) 0 1px, transparent 1.5px), radial-gradient(circle at 70% 40%, rgba(255,240,200,0.7) 0 1px, transparent 1.5px);
+	background-size: 200px 160px, 320px 260px;
+	opacity: 0.09;
+	animation: env-heat-drift 30s linear infinite;
+	filter: blur(0.2px);
+}
+@keyframes env-heat-drift { from { transform: translate3d(0,0,0); } to { transform: translate3d(10px,-6px,0); } }
+
+/* --- Rain (BARSAAT) --- */
+.scene[data-env="barsaat"] .environment-layer::before {
+	/* mist */
+	background: linear-gradient(180deg, rgba(220,230,235,0.18) 0%, rgba(220,230,235,0.06) 60%);
+	opacity: 0.18;
+}
+.scene[data-env="barsaat"] .environment-layer::after {
+	/* subtle rain streaks using repeating-linear-gradient */
+	background-image: repeating-linear-gradient(180deg, rgba(255,255,255,0.05) 0 1px, rgba(255,255,255,0.02) 2px, transparent 3px);
+	background-size: 4px 18px;
+	opacity: 0.08;
+	animation: env-rain-fall 0.9s linear infinite;
+	mix-blend-mode: overlay;
+}
+@keyframes env-rain-fall { from { background-position: 0 -10px; } to { background-position: 0 18px; } }
+
+/* occasional slightly denser rain - subtle pulse */
+.scene[data-env="barsaat"] .environment-layer { --rain-pulse: 1; }
+.scene[data-env="barsaat"] .environment-layer::after { animation: env-rain-fall 0.9s linear infinite, env-rain-pulse 8s ease-in-out infinite; }
+@keyframes env-rain-pulse { 0%,100% { opacity: 0.06 } 50% { opacity: 0.12 } }
+
+/* --- Field (KHETAN WICH) --- */
+.scene[data-env="khetan-wich"] .environment-layer::before {
+	background: radial-gradient(60% 40% at 30% 30%, rgba(250,245,220,0.14) 0%, transparent 40%);
+	opacity: 0.14;
+}
+.scene[data-env="khetan-wich"] .environment-layer::after {
+	background-image: radial-gradient(circle at 10% 20%, rgba(255,245,210,0.75) 0 1px, transparent 1.5px), radial-gradient(circle at 80% 35%, rgba(255,240,200,0.6) 0 1px, transparent 1.5px);
+	background-size: 160px 120px, 280px 220px;
+	opacity: 0.09;
+	animation: env-field-drift 34s linear infinite;
+}
+@keyframes env-field-drift { from { transform: translate3d(0,0,0); } to { transform: translate3d(-14px,-9px,0); } }
+
+/* Mobile reductions */
+@media (max-width:700px) {
+	.scene[data-env="raat-da-pind"] .environment-layer::after,
+	.scene[data-env="garmiyan"] .environment-layer::after,
+	.scene[data-env="barsaat"] .environment-layer::after,
+	.scene[data-env="khetan-wich"] .environment-layer::after {
+		opacity: 0.06; animation-duration: 48s; /* slower, less intense */
+	}
+	.scene[data-env="barsaat"] .environment-layer::after { animation-duration: 1.2s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.scene[data-env="raat-da-pind"] .environment-layer::after,
+	.scene[data-env="garmiyan"] .environment-layer::after,
+	.scene[data-env="barsaat"] .environment-layer::after,
+	.scene[data-env="khetan-wich"] .environment-layer::after { animation-duration: .01ms !important; opacity: 0.03 !important; }
+	.scene[data-env="garmiyan"] .environment-layer::after { filter: none !important; }
+}
 .scene-scanlines { opacity: .065; background: repeating-linear-gradient(0deg, transparent 0 3px, rgba(255,255,255,.15) 4px, transparent 5px); mix-blend-mode: overlay; }
 .topbar { position: absolute; top: 0; left: 0; right: 0; padding: 32px 44px; display: flex; justify-content: space-between; align-items: flex-start; }
 .brand-lockup { display: grid; gap: 6px; letter-spacing: .18em; font-size: 13px; font-weight: 600; }
@@ -55,3 +171,5 @@ h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(58px, 8vw, 118px
 @keyframes dust { from { transform: translate3d(0,0,0); } to { transform: translate3d(22px,-15px,0); } } @keyframes appear { from { opacity: 0; } to { opacity: 1; } }
 @media (max-width: 700px) { .topbar { padding: 22px 22px; } .tagline { display:none; } .memory-caption { left: 24px; right:24px; top: 41%; transform: translateY(-35%); }.memory-caption h1 { font-size: clamp(54px, 16vw, 82px); margin: 17px 0 13px; }.quote { font-size: 25px; max-width: 310px; }.ambient-line { margin-top: 20px; }.control-deck { left:24px; right:24px; bottom: 84px; display:block; }.radio-module { width:100%; }.actions { display:flex; justify-content:space-between; margin-top:16px; }.next-memory { right:24px; bottom: 157px; font-size:10px; }.footer-note { bottom: 16px; font-size: 7px; width: calc(100% - 38px); }.scene-image { transform: scale(1.12) translate3d(var(--parallax-x), var(--parallax-y), 0); }.support-modal { padding: 39px 25px 32px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } .scene-image { transform: scale(1.04); } }
+
+/* Dev toggle removed */

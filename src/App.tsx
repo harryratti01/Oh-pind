@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, Heart, Pause, Play, Radio, Volume2, VolumeX, X } from 'lucide-react';
 import { memories, type Memory } from '@/data/memories';
 import { useMemoryEngine } from '@/hooks/useMemoryEngine';
+import EnvironmentLayer from '@/components/EnvironmentLayer';
 
 type Parallax = { x: number; y: number };
 
@@ -41,8 +42,10 @@ function App() {
 
   return (
     <main className={`memory-app profile-${memory.profile} ${transitioning ? 'is-transitioning' : ''}`}>
-      <div className="scene" style={{ '--parallax-x': `${parallax.x}px`, '--parallax-y': `${parallax.y}px`, '--next-image': `url(${nextImage})` } as React.CSSProperties}>
+      <div className="scene" data-env={memory.id} style={{ '--parallax-x': `${parallax.x}px`, '--parallax-y': `${parallax.y}px`, '--next-image': `url(${nextImage})` } as React.CSSProperties}>
         <img className="scene-image" src={memory.image} alt={memory.imageAlt} />
+        {/* EnvironmentLayer is mounted above the image and below tint/vignette */}
+        <EnvironmentLayer memoryId={memory.id} />
         <div className="scene-tint" />
         <div className="scene-vignette" />
         <div className="scene-dust" aria-hidden="true" />
@@ -77,6 +80,8 @@ function App() {
           <button className="support-button" onClick={() => setSupportOpen(true)}><Heart size={14} /> SUPPORT OH PIND</button>
         </div>
       </div>
+
+      
 
       <button className="next-memory" aria-label="Change memory" onClick={nextMemory}><span>↻</span> IK HOR YAAD</button>
       <p className="footer-note">Music is provided through embedded third-party YouTube players. OH PIND does not host, download, or distribute music files. Music and other media remain the property of their respective copyright holders.</p>
