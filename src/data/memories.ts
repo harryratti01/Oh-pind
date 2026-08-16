@@ -57,7 +57,7 @@ export const memories: Memory[] = [
   {
     id: 'saddi-gali', year: '2006', time: '5:31 PM', title: 'SADDI GALI',
     quote: "ਗਲੀਆਂ 'ਚ ਰੌਣਕ ਹੁੰਦੀ ਸੀ।",
-    image: 'https://images.pexels.com/photos/12923128/pexels-photo-12923128.jpeg?auto=compress&cs=tinysrgb&w=2000',
+    image: '/assets/images/memories/saddi-gali.png',
     imageAlt: 'A bicycle on a rural road with fields and trees behind it',
     ambient: { label: 'children · bicycle bell · neighbours', tone: 'children' },
     music: { title: 'Gali De Khed', artist: 'Pind Radio / memory 06', youtubeVideoId: '' }, profile: 'street'

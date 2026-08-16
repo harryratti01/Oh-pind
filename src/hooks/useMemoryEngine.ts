@@ -26,7 +26,6 @@ function buildCycle(exclude: number): number[] {
 export function useMemoryEngine() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
-  const queueRef = useRef<number[]>(buildQueue(0));
   const lockRef = useRef(false);
 
   const advance = useCallback(() => {
@@ -35,15 +34,7 @@ export function useMemoryEngine() {
     setTransitioning(true);
 
     window.setTimeout(() => {
-      setActiveIndex((current) => {
-        let queue = queueRef.current;
-        if (queue.length === 0) {
-          queue = buildCycle(current);
-        }
-        const nextIndex = queue[0];
-        queueRef.current = queue.slice(1);
-        return nextIndex;
-      });
+      setActiveIndex((current) => (current + 1) % memories.length);
       setTransitioning(false);
       lockRef.current = false;
     }, 1000);
